@@ -153,7 +153,7 @@ def prepare_stratify_labels(labels, min_count=2):
 
 # Wczytaj dane z pojedynczego pliku
 print("Wczytywanie danych z ner_dataset.conll...")
-all_examples = load_conll_file("ner_dataset.conll")
+all_examples = load_conll_file("data/ner_dataset.conll")
 print(f"Wczytano {len(all_examples)} przykładów (zdań)")
 
 # Stwórz etykiety stratyfikacji dla każdego przykładu
@@ -266,13 +266,13 @@ test_dataset = test_dataset.map(tokenize_and_align_labels, batched=True)
 
 args = TrainingArguments(
     output_dir="./herbert-ner",
-    eval_strategy="epoch",  # zmienione z evaluation_strategy
-    save_strategy="epoch",
+    eval_strategy="no",  # zmienione z evaluation_strategy
     learning_rate=3e-5,
     per_device_train_batch_size=8,
     per_device_eval_batch_size=8,
     num_train_epochs=5,
     weight_decay=0.01,
+    save_strategy="no",
     load_best_model_at_end=True,
     logging_steps=50,
     metric_for_best_model="f1",
