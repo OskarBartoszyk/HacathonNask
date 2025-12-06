@@ -10,6 +10,7 @@ import re
 from typing import List, Tuple
 
 
+
 def read_file(filepath: str) -> str:
     with open(filepath, 'r', encoding='utf-8') as f:
         return f.read()
@@ -28,15 +29,47 @@ def extract_sentences(text: str) -> List[str]:
 def simple_tokenize(text: str) -> List[str]:
     """
     Prosta tokenizacja kompatybilna z HerBERTem.
-    WAŻNE: nie rozbijamy nawiasów kwadratowych, żeby [name] pozostało jednym tokenem.
+    WAŻNE: nie rozbijamy nawiasów kwadratowych, żeby [name] i [sexual-orientation] pozostały jednym tokenem.
     """
     # Usuń nadmiarowe spacje
     text = re.sub(r'\s+', ' ', text).strip()
+    
+    # Najpierw zabezpieczymy etykiety w nawiasach kwadratowych
+    # Zamieniamy je na placeholder aby nie były rozbijane
+    labels = re.findall(r'\[[^\]]+\]', text)
+    protected_text = text
+    for i, label in enumerate(labels):
+        # Użyjemy unique placeholder z separatorami aby nie mieszał się z numerami
+        protected_text = protected_text.replace(label, f'__PLACEHOLDER_{i}_END__', 1)
+    
     # Rozdziel typowe znaki interpunkcyjne, ale NIE [] (kwadratowe)
-    # zostawiamy też cudzysłowy i myślniki w miarę prostym podejściu
-    text = re.sub(r'([.,;:!?(){}„"\'\/\-\—])', r' \1 ', text)
-    text = re.sub(r'\s+', ' ', text).strip()
-    return text.split(' ')
+    protected_text = re.sub(r'([.,;:!?(){}„"\'\/\-\—])', r' \1 ', protected_text)
+    protected_text = re.sub(r'\s+', ' ', protected_text).strip()
+    tokens = protected_text.split(' ')
+    
+    # Przywróć oryginalne etykiety
+    result = []
+    for token in tokens:
+        if token.startswith('__PLACEHOLDER_') and token.endswith('_END__'):
+            try:
+                idx = int(token[14:-6])  # Extract number between __PLACEHOLDER_ and _END__
+                result.append(labels[idx])
+            except (ValueError, IndexError):
+                # Jeśli nie udało się wyodrębnić, zachowaj oryginalny token
+                result.append(token)
+        else:
+            result.append(token)
+    
+    return result
+
+def is_common_word(token: str) -> bool:
+    """Sprawdź czy token to zwyczajny wyraz (nie jest rzadkim słowem kluczowym)."""
+    # Słowa, które często pojawiają się jako słowa kluczowe
+    common_words = {'w', 'z', 'na', 'do', 'od', 'i', 'a', 'o', 'że', 'to', 'jak', 
+                    'gdy', 'lub', 'ale', 'jeśli', 'po', 'przed', 'przez', 'dla',
+                    'jest', 'są', 'by', 'był', 'będzie', 'mam', 'ma'}
+    return token.lower() in common_words
+
 
 def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[Tuple[str, str]]:
     """Dopasuj oryginał do zanonimizowanej wersji i stwórz tagi BIO."""
@@ -95,21 +128,59 @@ def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[T
             label = label_map.get(orig_token, 'PII')
             entity_tokens = []
 
-            # Konsumuj anon tokeny dopóki nie napotkamy tokenu, który odpowiada
-            # następnemu tokenowi w oryginale (lub do końca)
-            next_orig = orig_tokens[orig_idx + 1] if orig_idx + 1 < len(orig_tokens) else None
+            # Szukaj następnego znaczącego tokenu w oryginale (nie kropka, nie przecinek)
+            next_orig_idx = orig_idx + 1
+            while next_orig_idx < len(orig_tokens) and orig_tokens[next_orig_idx] in ['.', ',', ';', ':', '!', '?', '-', '/', '(', ')']:
+                next_orig_idx += 1
+            
+            next_orig = orig_tokens[next_orig_idx] if next_orig_idx < len(orig_tokens) else None
 
+            # Konsumuj anon tokeny dopóki nie napotkamy znaczącego tokenu z orig
             while anon_idx < len(anon_tokens):
+                current_anon = anon_tokens[anon_idx]
+                
                 # Jeśli następny orig token to też etykieta, przerwij natychmiast
-                # (NIE dodawaj bieżącego anon tokenu - może on należeć do następnej etykiety)
                 if next_orig is not None and next_orig.startswith('[') and next_orig.endswith(']'):
                     break
                 
-                # Jeśli bieżący anon token odpowiada następnemu orig, przerwij
-                if next_orig is not None and anon_tokens[anon_idx] == next_orig:
+                # Jeśli bieżący anon token odpowiada następnemu znaczącemu orig, przerwij
+                if next_orig is not None and current_anon == next_orig:
                     break
                 
-                entity_tokens.append(anon_tokens[anon_idx])
+                # Stop words - nie powinny być częścią entity (ale nie dla ADDRESS i COMPANY - tam dopuść skróty)
+                stop_words = {'w', 'z', 'na', 'do', 'od', 'i', 'a', 'o', 'że', 'to', 'jak', 
+                              'gdy', 'lub', 'ale', 'jeśli', 'po', 'przed', 'przez', 'dla'}
+                if current_anon.lower() in stop_words and entity_tokens and label not in ['ADDRESS', 'COMPANY']:
+                    break
+                
+                # Interpunkcja otoczona cyframi to skrót (ul., pl., itd.) - przechodzimy przez nią
+                # lub koniec zdania otoczony spacją - wtedy przechodzimy
+                is_punctuation_only = current_anon in ['.', ',', ';', ':', '!', '?', '-', '(', ')']
+                
+                # Jeśli interpunkcja i mamy tokeny entity
+                if is_punctuation_only and entity_tokens:
+                    # Przecinki zwykle są końcem imienia/nazwiska
+                    if current_anon == ',' and label in ['NAME', 'SURNAME', 'EMAIL']:
+                        break
+                    
+                    # Dla adresów i firm, przejdź przez interpunkcję (mogą być skróty/numery)
+                    if label in ['ADDRESS', 'COMPANY', 'SCHOOL']:
+                        entity_tokens.append(current_anon)
+                        anon_idx += 1
+                        # Sprawdź czy następny token to cyfra - jeśli tak, kontynuuj
+                        if anon_idx < len(anon_tokens) and anon_tokens[anon_idx][0].isdigit():
+                            continue
+                        # Inaczej sprawdź czy to koniec (następny orig to znaczący token)
+                        if next_orig is not None and anon_idx < len(anon_tokens):
+                            if anon_tokens[anon_idx] == next_orig or anon_tokens[anon_idx].lower() in stop_words:
+                                break
+                        continue
+                    else:
+                        # Dla innych typów - przerwij na interpunkcji
+                        anon_idx += 1
+                        break
+                
+                entity_tokens.append(current_anon)
                 anon_idx += 1
 
             # Tagowanie BIO
@@ -123,13 +194,12 @@ def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[T
             continue
 
         # Inna niezgodność: spróbuj heurystyki - jeśli anon_token występuje gdzieś dalej w orig -> przesuwamy orig
-        # (proste przeskakiwanie, żeby uniknąć utknięcia)
         if anon_token in orig_tokens[orig_idx+1:]:
             result.append((anon_token, 'O'))
             anon_idx += 1
             continue
 
-        # fallback: oznacz anon jako O i przesuwaj oba wskaźniki jeśli wyglądają podobnie
+        # fallback: oznacz anon jako O i przesuwaj oba wskaźniki
         result.append((anon_token, 'O'))
         anon_idx += 1
 
