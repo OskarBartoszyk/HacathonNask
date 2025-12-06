@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Infer NER tags with the fine-tuned HerBERT model and optionally anonymize text."""
+"""Infer NER tags with the fine-tuned HerBERT model hosted on Hugging Face."""
 
 from __future__ import annotations
 
-import argparse
 import json
 import re
 from pathlib import Path
@@ -42,20 +41,21 @@ PLACEHOLDER_MAP = {
     "SECRET": "[secret]",
     "PII": "[pii]",
 }
+def _resolve_id2label(model: AutoModelForTokenClassification, local_dir: Path | None) -> dict[int, str]:
+    if local_dir:
+        mapping_path = local_dir / "label_mapping.json"
+        if mapping_path.exists():
+            with mapping_path.open("r", encoding="utf-8") as f:
+                stored = json.load(f)
+            return {int(k): v for k, v in stored["id2label"].items()}
 
+    config_labels = getattr(model.config, "id2label", None)
+    if config_labels:
+        return {int(k): v for k, v in config_labels.items()}
 
-def load_label_mapping(model_dir: Path) -> Tuple[dict[int, str], dict[str, int]]:
-    mapping_path = model_dir / "label_mapping.json"
-    if mapping_path.exists():
-        with mapping_path.open("r", encoding="utf-8") as f:
-            stored = json.load(f)
-        id2label = {int(k): v for k, v in stored["id2label"].items()}
-        label2id = {k: int(v) for k, v in stored["label2id"].items()}
-    else:
-        raise FileNotFoundError(
-            f"Nie znaleziono {mapping_path}. Upewnij się, że po treningu zapisano mapowanie etykiet."
-        )
-    return id2label, label2id
+    raise ValueError(
+        "Model nie zawiera mapowania id2label. Upewnij się, że repozytorium Hugging Face zostało poprawnie zapisane."
+    )
 
 
 def predict_tags(
@@ -138,35 +138,46 @@ def write_conll(output_path: Path, tokens_with_tags: List[List[Tuple[str, str]]]
             f.write("\n")
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Taguj i anonimizuj tekst za pomocą modelu HerBERT NER.")
-    parser.add_argument("input", type=Path, help="Plik z tekstem do oznaczenia (jeden akapit na linię).")
-    parser.add_argument(
-        "--model-dir",
-        type=Path,
-        default=Path("./herbert-ner"),
-        help="Katalog z zapisanym modelem oraz label_mapping.json.",
-    )
-    parser.add_argument("--output", type=Path, help="Plik wyjściowy z tekstem po anonimizacji.")
-    parser.add_argument(
-        "--conll-output",
-        type=Path,
-        help="Opcjonalny plik w formacie CoNLL z tokenami i etykietami.",
-    )
-    args = parser.parse_args()
+def anonymize_file(
+    input_path: Path | str,
+    model_dir: Path | str = "Matela7/AnonBert-ENR",
+    output_path: Path | str | None = None,
+    conll_path: Path | str | None = None,
+) -> tuple[Path, Path]:
+    """Tag a text file and write anonymized text plus optional CoNLL with labels."""
 
-    if not args.input.exists():
-        raise FileNotFoundError(f"Nie znaleziono pliku wejściowego: {args.input}")
+    input_path = Path(input_path)
+    model_dir = Path(model_dir)
+    if not input_path.exists():
+        raise FileNotFoundError(f"Nie znaleziono pliku wejściowego: {input_path}")
 
-    id2label, _ = load_label_mapping(args.model_dir)
-    tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
-    model = AutoModelForTokenClassification.from_pretrained(args.model_dir)
+    local_model_dir: Path | None = None
+    if model_dir.exists():
+        local_model_dir = model_dir
+        source = model_dir
+    else:
+        # Pozwól użytkownikowi podać identyfikator repozytorium jako string.
+        source = str(model_dir)
+
+    tokenizer = AutoTokenizer.from_pretrained(source)
+    model = AutoModelForTokenClassification.from_pretrained(source)
     model.eval()
+    id2label = _resolve_id2label(model, local_model_dir)
+
+    if output_path is None:
+        output_path = input_path.with_name(f"{input_path.stem}_anon{input_path.suffix or '.txt'}")
+    else:
+        output_path = Path(output_path)
+
+    if conll_path is None:
+        conll_path = input_path.with_name(f"{input_path.stem}_tags.conll")
+    else:
+        conll_path = Path(conll_path)
 
     anonymized_lines: List[str] = []
     conll_sequences: List[List[Tuple[str, str]]] = []
 
-    with args.input.open("r", encoding="utf-8") as src:
+    with input_path.open("r", encoding="utf-8") as src:
         for line in src:
             stripped = line.strip()
             if not stripped:
@@ -178,17 +189,21 @@ def main() -> None:
             conll_sequences.append(list(zip(tokens, tags)))
             anonymized_lines.append(tokens_to_placeholder_text(tokens, tags))
 
-    if args.output:
-        with args.output.open("w", encoding="utf-8") as dst:
-            for line in anonymized_lines:
-                dst.write(line + "\n")
-    else:
+    with output_path.open("w", encoding="utf-8") as dst:
         for line in anonymized_lines:
-            print(line)
+            dst.write(line + "\n")
 
-    if args.conll_output:
-        write_conll(args.conll_output, conll_sequences)
+    if conll_sequences:
+        write_conll(conll_path, conll_sequences)
+
+    print(f"✓ Zapisano tekst z zamienionymi etykietami do: {output_path}")
+    if conll_sequences:
+        print(f"✓ Zapisano tokeny i tagi w formacie CoNLL do: {conll_path}")
+
+    return output_path, conll_path
 
 
 if __name__ == "__main__":
-    main()
+    INPUT_PATH = Path("data/test.txt")  # zmień na swój plik
+    MODEL_DIR: Path | str = "Matela7/AnonBert-ENR"
+    anonymize_file(input_path=INPUT_PATH, model_dir=MODEL_DIR)
