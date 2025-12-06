@@ -27,40 +27,34 @@ def extract_sentences(text: str) -> List[str]:
 
 
 def simple_tokenize(text: str) -> List[str]:
-    """
-    Prosta tokenizacja kompatybilna z HerBERTem.
-    WAŻNE: nie rozbijamy nawiasów kwadratowych, żeby [name] i [sexual-orientation] pozostały jednym tokenem.
-    """
-    # Usuń nadmiarowe spacje
+    """Lekka tokenizacja zgodna z HerBERTem z ochroną wrażliwych ciągów."""
     text = re.sub(r'\s+', ' ', text).strip()
-    
-    # Najpierw zabezpieczymy etykiety w nawiasach kwadratowych
-    # Zamieniamy je na placeholder aby nie były rozbijane
-    labels = re.findall(r'\[[^\]]+\]', text)
-    protected_text = text
-    for i, label in enumerate(labels):
-        # Użyjemy unique placeholder z separatorami aby nie mieszał się z numerami
-        protected_text = protected_text.replace(label, f'__PLACEHOLDER_{i}_END__', 1)
-    
-    # Rozdziel typowe znaki interpunkcyjne, ale NIE [] (kwadratowe)
-    protected_text = re.sub(r'([.,;:!?(){}„"\'\/\-\—])', r' \1 ', protected_text)
-    protected_text = re.sub(r'\s+', ' ', protected_text).strip()
-    tokens = protected_text.split(' ')
-    
-    # Przywróć oryginalne etykiety
-    result = []
-    for token in tokens:
-        if token.startswith('__PLACEHOLDER_') and token.endswith('_END__'):
-            try:
-                idx = int(token[14:-6])  # Extract number between __PLACEHOLDER_ and _END__
-                result.append(labels[idx])
-            except (ValueError, IndexError):
-                # Jeśli nie udało się wyodrębnić, zachowaj oryginalny token
-                result.append(token)
-        else:
-            result.append(token)
-    
-    return result
+
+    placeholder_counter = 0
+    replacements = {}
+
+    def protect(pattern: str, prefix: str, source: str) -> str:
+        nonlocal placeholder_counter
+        matches = list(re.finditer(pattern, source))
+        for match in reversed(matches):
+            placeholder = f'__{prefix}_{placeholder_counter}__'
+            replacements[placeholder] = match.group(0)
+            placeholder_counter += 1
+            start, end = match.span()
+            source = source[:start] + placeholder + source[end:]
+        return source
+
+    # Zachowaj etykiety i wrażliwe ciągi w całości
+    text = protect(r'\[[^\]]+\]', 'LABEL', text)
+    text = protect(r'[A-Za-z0-9._%+\-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}', 'EMAIL', text)
+    text = protect(r'https?://\S+', 'URL', text)
+
+    # Rozdziel typowe znaki interpunkcyjne, ale bez naruszania placeholderów
+    text = re.sub(r'([.,;:!?(){}„"\'\/\-\—])', r' \1 ', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+    tokens = text.split(' ')
+
+    return [replacements.get(token, token) for token in tokens if token]
 
 def is_common_word(token: str) -> bool:
     """Sprawdź czy token to zwyczajny wyraz (nie jest rzadkim słowem kluczowym)."""
@@ -100,6 +94,7 @@ def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[T
         '[username]': 'USERNAME',
         '[secret]': 'SECRET',
     }
+    all_labels = set(label_map.values())
 
     orig_tokens = simple_tokenize(orig_text)
     anon_tokens = simple_tokenize(anon_text)
@@ -111,6 +106,27 @@ def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[T
     result = []
     orig_idx = 0
     anon_idx = 0
+
+    punctuation_tokens = {'.', ',', ';', ':', '!', '?', '-', '(', ')', '/', '–', '—'}
+    punctuation_friendly_labels = all_labels | {'PII'}
+    stop_words = {
+        'w', 'z', 'na', 'do', 'od', 'i', 'a', 'o', 'że', 'to', 'jak', 'gdy', 'lub',
+        'ale', 'jeśli', 'po', 'przed', 'przez', 'dla', 'u', 'ze', 'pod', 'nad'
+    }
+    anchor_window = 10
+
+    def find_anchor_position(sequence: List[str], start_idx: int, anchor_tokens: List[str]) -> int | None:
+        """Zwróć indeks pierwszego dopasowania anchor_tokens w sequence zaczynając od start_idx."""
+        if not anchor_tokens:
+            return None
+        anchor_len = len(anchor_tokens)
+        max_start = len(sequence) - anchor_len
+        if max_start < start_idx:
+            return None
+        for idx in range(start_idx, max_start + 1):
+            if sequence[idx:idx + anchor_len] == anchor_tokens:
+                return idx
+        return None
 
     while orig_idx < len(orig_tokens) and anon_idx < len(anon_tokens):
         orig_token = orig_tokens[orig_idx]
@@ -126,70 +142,101 @@ def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[T
         # Jeżeli ORIG token to etykieta w formacie [label]
         if orig_token.startswith('[') and orig_token.endswith(']'):
             label = label_map.get(orig_token, 'PII')
-            entity_tokens = []
+            entity_tokens: List[str] = []
 
-            # Szukaj następnego znaczącego tokenu w oryginale (nie kropka, nie przecinek)
-            next_orig_idx = orig_idx + 1
-            while next_orig_idx < len(orig_tokens) and orig_tokens[next_orig_idx] in ['.', ',', ';', ':', '!', '?', '-', '/', '(', ')']:
-                next_orig_idx += 1
-            
-            next_orig = orig_tokens[next_orig_idx] if next_orig_idx < len(orig_tokens) else None
+            # Zbuduj listę tokenów do następnej etykiety, by ustalić kotwicę
+            anchor_tokens_raw: List[str] = []
+            scan_idx = orig_idx + 1
+            while scan_idx < len(orig_tokens):
+                candidate = orig_tokens[scan_idx]
+                if candidate.startswith('[') and candidate.endswith(']'):
+                    break
+                anchor_tokens_raw.append(candidate)
+                scan_idx += 1
 
-            # Konsumuj anon tokeny dopóki nie napotkamy znaczącego tokenu z orig
-            while anon_idx < len(anon_tokens):
-                current_anon = anon_tokens[anon_idx]
-                
-                # Jeśli następny orig token to też etykieta, przerwij natychmiast
-                if next_orig is not None and next_orig.startswith('[') and next_orig.endswith(']'):
+            next_label_token = orig_tokens[scan_idx] if scan_idx < len(orig_tokens) else None
+            next_orig = None
+            for candidate in anchor_tokens_raw:
+                if candidate not in punctuation_tokens:
+                    next_orig = candidate
                     break
-                
-                # Jeśli bieżący anon token odpowiada następnemu znaczącemu orig, przerwij
-                if next_orig is not None and current_anon == next_orig:
+
+            # Przygotuj możliwe kotwice do wyszukania w tekście zanonimizowanym
+            anchor_candidates: List[List[str]] = []
+            if anchor_tokens_raw:
+                anchor_candidates.append(anchor_tokens_raw)
+                anchor_candidates.append(anchor_tokens_raw[:anchor_window])
+            cleaned_anchor = [tok for tok in anchor_tokens_raw if tok not in punctuation_tokens]
+            if cleaned_anchor:
+                anchor_candidates.append(cleaned_anchor)
+                anchor_candidates.append(cleaned_anchor[:anchor_window])
+            cleaned_no_stop = [tok for tok in cleaned_anchor if tok.lower() not in stop_words]
+            if cleaned_no_stop:
+                anchor_candidates.append(cleaned_no_stop)
+                anchor_candidates.append(cleaned_no_stop[:anchor_window])
+
+            # Usuń duplikaty zachowując kolejność
+            deduped_candidates: List[List[str]] = []
+            seen_signatures: set[tuple[str, ...]] = set()
+            for candidate in anchor_candidates:
+                usable = [tok for tok in candidate if tok]
+                signature = tuple(usable)
+                if not usable or signature in seen_signatures:
+                    continue
+                seen_signatures.add(signature)
+                deduped_candidates.append(usable)
+            anchor_candidates = deduped_candidates
+
+            anchor_idx = None
+            for candidate in anchor_candidates:
+                pos = find_anchor_position(anon_tokens, anon_idx, candidate)
+                if pos is not None:
+                    anchor_idx = pos
                     break
-                
-                # Stop words - nie powinny być częścią entity (ale nie dla ADDRESS i COMPANY - tam dopuść skróty)
-                stop_words = {'w', 'z', 'na', 'do', 'od', 'i', 'a', 'o', 'że', 'to', 'jak', 
-                              'gdy', 'lub', 'ale', 'jeśli', 'po', 'przed', 'przez', 'dla'}
-                if current_anon.lower() in stop_words and entity_tokens and label not in ['ADDRESS', 'COMPANY']:
-                    break
-                
-                # Interpunkcja otoczona cyframi to skrót (ul., pl., itd.) - przechodzimy przez nią
-                # lub koniec zdania otoczony spacją - wtedy przechodzimy
-                is_punctuation_only = current_anon in ['.', ',', ';', ':', '!', '?', '-', '(', ')']
-                
-                # Jeśli interpunkcja i mamy tokeny entity
-                if is_punctuation_only and entity_tokens:
-                    # Przecinki zwykle są końcem imienia/nazwiska
-                    if current_anon == ',' and label in ['NAME', 'SURNAME', 'EMAIL']:
+
+            if anchor_idx is not None:
+                entity_tokens = anon_tokens[anon_idx:anchor_idx]
+                anon_idx = anchor_idx
+            else:
+                while anon_idx < len(anon_tokens):
+                    current_anon = anon_tokens[anon_idx]
+
+                    # Jeśli następny token w oryginale to etykieta (np. brak wartości), przerywamy
+                    if next_label_token and next_label_token.startswith('[') and next_label_token.endswith(']'):
                         break
-                    
-                    # Dla adresów i firm, przejdź przez interpunkcję (mogą być skróty/numery)
-                    if label in ['ADDRESS', 'COMPANY', 'SCHOOL']:
-                        entity_tokens.append(current_anon)
-                        anon_idx += 1
-                        # Sprawdź czy następny token to cyfra - jeśli tak, kontynuuj
-                        if anon_idx < len(anon_tokens) and anon_tokens[anon_idx][0].isdigit():
+
+                    # Jeśli dotarliśmy do spodziewanego tokenu po encji, zatrzymaj
+                    if next_orig is not None and current_anon == next_orig:
+                        break
+
+                    # Stop words nie przerywają już encji – pozwalamy im występować w środku
+
+                    # Obsługa interpunkcji
+                    if current_anon in punctuation_tokens and entity_tokens:
+                        if current_anon == ',' and label in ['NAME', 'SURNAME', 'EMAIL']:
+                            break
+                        if label in punctuation_friendly_labels:
+                            entity_tokens.append(current_anon)
+                            anon_idx += 1
+                            if anon_idx < len(anon_tokens) and anon_tokens[anon_idx][0].isdigit():
+                                continue
+                            if next_orig is not None and anon_idx < len(anon_tokens):
+                                if (anon_tokens[anon_idx] == next_orig or
+                                        anon_tokens[anon_idx].lower() in stop_words):
+                                    break
                             continue
-                        # Inaczej sprawdź czy to koniec (następny orig to znaczący token)
-                        if next_orig is not None and anon_idx < len(anon_tokens):
-                            if anon_tokens[anon_idx] == next_orig or anon_tokens[anon_idx].lower() in stop_words:
-                                break
-                        continue
-                    else:
-                        # Dla innych typów - przerwij na interpunkcji
                         anon_idx += 1
                         break
-                
-                entity_tokens.append(current_anon)
-                anon_idx += 1
+
+                    entity_tokens.append(current_anon)
+                    anon_idx += 1
 
             # Tagowanie BIO
             if entity_tokens:
                 result.append((entity_tokens[0], f'B-{label}'))
                 for token in entity_tokens[1:]:
                     result.append((token, f'I-{label}'))
-            
-            # przesuwamy orig do następnego tokenu (etykieta jako jeden token)
+
             orig_idx += 1
             continue
 
