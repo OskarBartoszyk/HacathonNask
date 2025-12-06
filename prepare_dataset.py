@@ -16,19 +16,12 @@ def read_file(filepath: str) -> str:
 
 
 def extract_sentences(text: str) -> List[str]:
-    """Podziel tekst na zdania/akapity."""
+    """Podziel tekst na zdania/akapity. Każda linia to osobne zdanie."""
     sentences = []
-    current = []
     for line in text.split('\n'):
         line = line.strip()
-        if not line:
-            if current:
-                sentences.append(' '.join(current))
-                current = []
-        else:
-            current.append(line)
-    if current:
-        sentences.append(' '.join(current))
+        if line:  # Ignoruj puste linie
+            sentences.append(line)
     return sentences
 
 
@@ -107,18 +100,15 @@ def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[T
             next_orig = orig_tokens[orig_idx + 1] if orig_idx + 1 < len(orig_tokens) else None
 
             while anon_idx < len(anon_tokens):
+                # Jeśli następny orig token to też etykieta, przerwij natychmiast
+                # (NIE dodawaj bieżącego anon tokenu - może on należeć do następnej etykiety)
+                if next_orig is not None and next_orig.startswith('[') and next_orig.endswith(']'):
+                    break
+                
+                # Jeśli bieżący anon token odpowiada następnemu orig, przerwij
                 if next_orig is not None and anon_tokens[anon_idx] == next_orig:
                     break
-                # jeśli kolejny orig też jest etykietą - zatrzymaj po dodaniu bieżącego anon (to pokrywa back-to-back labels)
-                if next_orig is not None and next_orig.startswith('[') and next_orig.endswith(']'):
-                    # ale jeśli anon token jest równy następnej etykiecie (mało prawdopodobne), przerwij
-                    if anon_tokens[anon_idx] == next_orig:
-                        break
-                    # dodaj bieżący anon i zakończ (przy back-to-back label)
-                    entity_tokens.append(anon_tokens[anon_idx])
-                    anon_idx += 1
-                    break
-
+                
                 entity_tokens.append(anon_tokens[anon_idx])
                 anon_idx += 1
 
@@ -127,6 +117,7 @@ def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[T
                 result.append((entity_tokens[0], f'B-{label}'))
                 for token in entity_tokens[1:]:
                     result.append((token, f'I-{label}'))
+            
             # przesuwamy orig do następnego tokenu (etykieta jako jeden token)
             orig_idx += 1
             continue
