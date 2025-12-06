@@ -269,6 +269,10 @@ print("\nEvaluacja na zbiorze testowym:")
 metrics = trainer.evaluate(test_dataset)
 print(metrics)
 
+print("\nZapis modelu oraz tokenizera...")
+trainer.save_model("./herbert-ner")
+tokenizer.save_pretrained("./herbert-ner")
+
 print("\n✅ Training finished!")
 print(f"📁 Model zapisany w: ./herbert-ner")
 
