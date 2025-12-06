@@ -5,13 +5,13 @@ from transformers import (
     Trainer,
     DataCollatorForTokenClassification
 )
-from datasets import load_dataset
+from datasets import load_dataset, Dataset
 import numpy as np
 from seqeval.metrics import f1_score, classification_report
+from sklearn.model_selection import train_test_split
+from collections import Counter
 
-# ===========================
-# CONFIG
-# ===========================
+
 model_name = "allegro/herbert-base-cased"
 
 LABEL_LIST = [
@@ -59,9 +59,7 @@ NUM_LABELS = len(LABEL_LIST)
 label2id = {l: i for i, l in enumerate(LABEL_LIST)}
 id2label = {i: l for i, l in enumerate(LABEL_LIST)}
 
-# ===========================
-# TOKENIZER + MODEL
-# ===========================
+
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 model = AutoModelForTokenClassification.from_pretrained(
@@ -71,34 +69,154 @@ model = AutoModelForTokenClassification.from_pretrained(
     label2id=label2id
 )
 
-# ===========================
-# LOADING DATA (ConLL)
-# ===========================
-dataset = load_dataset("text", data_files={
-    "train": "train.conll",
-    "test": "test.conll"
-})
 
-def parse_conll(example):
-    tokens = []
-    labels = []
+def load_conll_file(filepath):
+    """Wczytuje plik CoNLL i zwraca listę przykładów (zdań)."""
+    examples = []
+    current_tokens = []
+    current_labels = []
+    
+    with open(filepath, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            
+            if not line:  # pusta linia = koniec zdania
+                if current_tokens:
+                    examples.append({
+                        'tokens': current_tokens,
+                        'ner_tags': current_labels
+                    })
+                    current_tokens = []
+                    current_labels = []
+            else:
+                try:
+                    parts = line.split()
+                    if len(parts) >= 2:
+                        token = parts[0]
+                        tag = parts[1]
+                        current_tokens.append(token)
+                        current_labels.append(tag)
+                except:
+                    continue
+        
+        # dodaj ostatnie zdanie jeśli nie było pustej linii na końcu
+        if current_tokens:
+            examples.append({
+                'tokens': current_tokens,
+                'ner_tags': current_labels
+            })
+    
+    return examples
 
-    for line in example["text"].split("\n"):
-        if not line.strip():
-            continue
 
-        try:
-            token, tag = line.split()
-        except:
-            continue
+def get_sentence_label_distribution(example):
+    """
+    Zwraca główną etykietę dla zdania (poza 'O').
+    Używane do stratyfikacji - szukamy najważniejszej encji w zdaniu.
+    Grupuje rzadkie klasy do kategorii 'OTHER' aby umożliwić stratyfikację.
+    """
+    # Zlicz wszystkie etykiety B- (początek encji)
+    label_counts = Counter()
+    for tag in example['ner_tags']:
+        if tag.startswith('B-'):
+            label_counts[tag] = label_counts.get(tag, 0) + 1
+    
+    # Jeśli są jakieś encje, zwróć najczęstszą
+    if label_counts:
+        return label_counts.most_common(1)[0][0]
+    
+    # Jeśli tylko 'O', zwróć 'O'
+    return 'O'
 
-        tokens.append(token)
-        labels.append(tag)
 
-    return {"tokens": tokens, "ner_tags": labels}
+def prepare_stratify_labels(labels, min_count=2):
+    """
+    Przygotowuje etykiety do stratyfikacji.
+    Dla klas z < min_count przykładów przypisuje specjalną etykietę 'RARE_CLASS'.
+    Dla pozostałych klas zwraca oryginalną etykietę.
+    """
+    label_counts = Counter(labels)
+    stratify_safe = []
+    
+    for label in labels:
+        if label_counts[label] < min_count:
+            # Klasy z < 2 przykładami grupujemy do 'RARE_CLASS' tylko na potrzeby stratyfikacji
+            stratify_safe.append('RARE_CLASS')
+        else:
+            stratify_safe.append(label)
+    
+    return stratify_safe
 
 
-dataset = dataset.map(parse_conll)
+# Wczytaj dane z pojedynczego pliku
+print("Wczytywanie danych z ner_dataset.conll...")
+all_examples = load_conll_file("ner_dataset.conll")
+print(f"Wczytano {len(all_examples)} przykładów (zdań)")
+
+# Stwórz etykiety stratyfikacji dla każdego przykładu
+stratify_labels = [get_sentence_label_distribution(ex) for ex in all_examples]
+
+# Wyświetl statystyki
+print("\nRozkład klas w całym zbiorze:")
+label_dist = Counter(stratify_labels)
+for label, count in label_dist.most_common():
+    print(f"  {label}: {count} zdań ({count/len(all_examples)*100:.1f}%)")
+
+# Przygotuj etykiety do stratyfikacji (rzadkie klasy = None)
+stratify_safe = prepare_stratify_labels(stratify_labels, min_count=2)
+
+# Zlicz ile klas może być stratyfikowanych
+if stratify_safe:
+    stratifiable = sum(1 for l in stratify_safe if l is not None)
+    print(f"\nKlasy możliwe do stratyfikacji: {stratifiable}/{len(stratify_safe)} zdań")
+    rare_classes = [label for label, count in label_dist.items() if count < 2]
+    if rare_classes:
+        print(f"Klasy z <2 przykładami (dzielone losowo): {', '.join(rare_classes)}")
+
+# Wykonaj podział train/test (80/20)
+print("\nWykonywanie podziału train/test (80/20) ze stratyfikacją dla częstych klas...")
+train_examples, test_examples = train_test_split(
+    all_examples,
+    test_size=0.2,
+    random_state=42,
+    stratify=stratify_safe
+)
+
+print(f"Zbiór treningowy: {len(train_examples)} przykładów")
+print(f"Zbiór testowy: {len(test_examples)} przykładów")
+
+# Pobierz etykiety dla zbiorów train i test
+train_labels = [get_sentence_label_distribution(ex) for ex in train_examples]
+test_labels = [get_sentence_label_distribution(ex) for ex in test_examples]
+
+# Wyświetl rozkład w zbiorach train i test
+print("\nRozkład klas w zbiorze treningowym:")
+train_dist = Counter(train_labels)
+for label, count in train_dist.most_common():
+    print(f"  {label}: {count} zdań ({count/len(train_examples)*100:.1f}%)")
+
+print("\nRozkład klas w zbiorze testowym:")
+test_dist = Counter(test_labels)
+for label, count in test_dist.most_common():
+    print(f"  {label}: {count} zdań ({count/len(test_examples)*100:.1f}%)")
+
+# Sprawdź, które klasy są obecne w train/test
+all_unique_labels = set(label_dist.keys())
+train_unique_labels = set(train_dist.keys())
+test_unique_labels = set(test_dist.keys())
+
+missing_in_train = all_unique_labels - train_unique_labels
+missing_in_test = all_unique_labels - test_unique_labels
+
+if missing_in_test:
+    print(f"\n⚠️  Klasy nieobecne w zbiorze testowym: {', '.join(missing_in_test)}")
+if missing_in_train:
+    print(f"\n⚠️  Klasy nieobecne w zbiorze treningowym: {', '.join(missing_in_train)}")
+
+# Konwertuj do formatu Dataset
+train_dataset = Dataset.from_list(train_examples)
+test_dataset = Dataset.from_list(test_examples)
+
 
 def tokenize_and_align_labels(examples):
     tokenized = tokenizer(
@@ -133,10 +251,9 @@ def tokenize_and_align_labels(examples):
     return tokenized
 
 
-tokenized_dataset = dataset.map(tokenize_and_align_labels, batched=True)
-
-train_dataset = tokenized_dataset["train"]
-test_dataset = tokenized_dataset["test"]
+print("\nTokenizacja danych...")
+train_dataset = train_dataset.map(tokenize_and_align_labels, batched=True)
+test_dataset = test_dataset.map(tokenize_and_align_labels, batched=True)
 
 args = TrainingArguments(
     output_dir="./herbert-ner",
@@ -152,6 +269,7 @@ args = TrainingArguments(
 )
 
 data_collator = DataCollatorForTokenClassification(tokenizer)
+
 def compute_metrics(pred):
     predictions, labels = pred
     predictions = np.argmax(predictions, axis=2)
@@ -184,6 +302,8 @@ trainer = Trainer(
     compute_metrics=compute_metrics,
 )
 
+print("\nRozpoczynanie treningu...")
 trainer.train()
 
-print("Training finished!")
+print("\nTraining finished!")
+print(f"Model zapisany w: ./herbert-ner")
