@@ -10,7 +10,6 @@ import re
 from typing import List, Tuple
 
 
-
 def read_file(filepath: str) -> str:
     with open(filepath, 'r', encoding='utf-8') as f:
         return f.read()
@@ -21,7 +20,7 @@ def extract_sentences(text: str) -> List[str]:
     sentences = []
     for line in text.split('\n'):
         line = line.strip()
-        if line:  # Ignoruj puste linie
+        if line:
             sentences.append(line)
     return sentences
 
@@ -49,24 +48,17 @@ def simple_tokenize(text: str) -> List[str]:
     text = protect(r'[A-Za-z0-9._%+\-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}', 'EMAIL', text)
     text = protect(r'https?://\S+', 'URL', text)
 
-    # Rozdziel typowe znaki interpunkcyjne, ale bez naruszania placeholderów
-    text = re.sub(r'([.,;:!?(){}„"\'\/\-\—])', r' \1 ', text)
+    # Rozdziel typowe znaki interpunkcyjne
+    text = re.sub(r'([.,;:!?(){}„"\'\/\-–—])', r' \1 ', text)
     text = re.sub(r'\s+', ' ', text).strip()
     tokens = text.split(' ')
 
     return [replacements.get(token, token) for token in tokens if token]
 
-def is_common_word(token: str) -> bool:
-    """Sprawdź czy token to zwyczajny wyraz (nie jest rzadkim słowem kluczowym)."""
-    # Słowa, które często pojawiają się jako słowa kluczowe
-    common_words = {'w', 'z', 'na', 'do', 'od', 'i', 'a', 'o', 'że', 'to', 'jak', 
-                    'gdy', 'lub', 'ale', 'jeśli', 'po', 'przed', 'przez', 'dla',
-                    'jest', 'są', 'by', 'był', 'będzie', 'mam', 'ma'}
-    return token.lower() in common_words
-
 
 def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[Tuple[str, str]]:
     """Dopasuj oryginał do zanonimizowanej wersji i stwórz tagi BIO."""
+    # ZGODNE Z herbert-tuning.py - wielkie litery i skróty
     label_map = {
         '[name]': 'NAME',
         '[surname]': 'SURNAME',
@@ -116,7 +108,6 @@ def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[T
     anchor_window = 10
 
     def find_anchor_position(sequence: List[str], start_idx: int, anchor_tokens: List[str]) -> int | None:
-        """Zwróć indeks pierwszego dopasowania anchor_tokens w sequence zaczynając od start_idx."""
         if not anchor_tokens:
             return None
         anchor_len = len(anchor_tokens)
@@ -132,19 +123,16 @@ def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[T
         orig_token = orig_tokens[orig_idx]
         anon_token = anon_tokens[anon_idx]
 
-        # Jeśli tokeny są identyczne -> O
         if orig_token == anon_token:
             result.append((anon_token, 'O'))
             orig_idx += 1
             anon_idx += 1
             continue
 
-        # Jeżeli ORIG token to etykieta w formacie [label]
         if orig_token.startswith('[') and orig_token.endswith(']'):
             label = label_map.get(orig_token, 'PII')
             entity_tokens: List[str] = []
 
-            # Zbuduj listę tokenów do następnej etykiety, by ustalić kotwicę
             anchor_tokens_raw: List[str] = []
             scan_idx = orig_idx + 1
             while scan_idx < len(orig_tokens):
@@ -161,7 +149,6 @@ def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[T
                     next_orig = candidate
                     break
 
-            # Przygotuj możliwe kotwice do wyszukania w tekście zanonimizowanym
             anchor_candidates: List[List[str]] = []
             if anchor_tokens_raw:
                 anchor_candidates.append(anchor_tokens_raw)
@@ -175,7 +162,6 @@ def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[T
                 anchor_candidates.append(cleaned_no_stop)
                 anchor_candidates.append(cleaned_no_stop[:anchor_window])
 
-            # Usuń duplikaty zachowując kolejność
             deduped_candidates: List[List[str]] = []
             seen_signatures: set[tuple[str, ...]] = set()
             for candidate in anchor_candidates:
@@ -201,17 +187,12 @@ def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[T
                 while anon_idx < len(anon_tokens):
                     current_anon = anon_tokens[anon_idx]
 
-                    # Jeśli następny token w oryginale to etykieta (np. brak wartości), przerywamy
                     if next_label_token and next_label_token.startswith('[') and next_label_token.endswith(']'):
                         break
 
-                    # Jeśli dotarliśmy do spodziewanego tokenu po encji, zatrzymaj
                     if next_orig is not None and current_anon == next_orig:
                         break
 
-                    # Stop words nie przerywają już encji – pozwalamy im występować w środku
-
-                    # Obsługa interpunkcji
                     if current_anon in punctuation_tokens and entity_tokens:
                         if current_anon == ',' and label in ['NAME', 'SURNAME', 'EMAIL']:
                             break
@@ -240,17 +221,14 @@ def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[T
             orig_idx += 1
             continue
 
-        # Inna niezgodność: spróbuj heurystyki - jeśli anon_token występuje gdzieś dalej w orig -> przesuwamy orig
         if anon_token in orig_tokens[orig_idx+1:]:
             result.append((anon_token, 'O'))
             anon_idx += 1
             continue
 
-        # fallback: oznacz anon jako O i przesuwaj oba wskaźniki
         result.append((anon_token, 'O'))
         anon_idx += 1
 
-    # Pozostałe anon tokeny -> O
     while anon_idx < len(anon_tokens):
         result.append((anon_tokens[anon_idx], 'O'))
         anon_idx += 1
@@ -311,24 +289,42 @@ def create_conll_format(orig_file: str, anon_file: str, output_file: str):
     orig_sentences = extract_sentences(orig_text)
     anon_sentences = extract_sentences(anon_text)
 
+    sentence_count = 0
+    tag_stats = {}
+    
     with open(output_file, 'w', encoding='utf-8') as f:
         for orig_sent, anon_sent in zip(orig_sentences, anon_sentences):
             try:
                 tagged = align_and_tag(orig_sent, anon_sent)
                 if not tagged or len(tagged) < 3:
                     continue
+                
+                # Zbierz statystyki
+                for token, tag in tagged:
+                    if tag.startswith('B-'):
+                        tag_stats[tag] = tag_stats.get(tag, 0) + 1
+                
                 for token, tag in tagged:
                     f.write(f"{token}\t{tag}\n")
                 f.write("\n")
+                sentence_count += 1
             except Exception:
                 continue
 
     print(f"✓ Utworzono dataset CoNLL: {output_file}")
+    print(f"  Zapisano {sentence_count} zdań")
+    
+    # Wyświetl rozkład klas B- (zdania z daną encją)
+    print(f"\n📊 Rozkład zdań według głównej encji (B- tags):")
+    for tag in sorted(tag_stats.keys()):
+        print(f"  {tag}: {tag_stats[tag]} zdań")
+    
+    return tag_stats
 
 
 if __name__ == "__main__":
-    orig_file = "data/orig.txt"          # plik z etykietami [name], [city], ...
-    anon_file = "data/anonymized.txt"    # zanonimizowana wersja
+    orig_file = "data/orig.txt"
+    anon_file = "data/anonymized.txt"
     output_jsonl = "data/ner_dataset.jsonl"
     output_conll = "data/ner_dataset.conll"
 
