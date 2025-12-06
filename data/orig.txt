@@ -3094,3 +3094,243 @@ Składam skargę na pracownika [company] o nazwisku [surname], który nadużywa 
 Składam skargę na nieuczciwe praktyki firmy [company], która z premedytacją wprowadziła mnie w błąd. Podczas zakupu produktu online przedstawiono mi cenę [amount], jednak po dokonaniu płatności z mojej karty [credit-card-number] okazało się, że zostało pobrane [higher-amount].   Próbowałam skontaktować się z obsługą klienta pod numerem [phone], ale przez 40 minut nikt nie odebrał. Kiedy w końcu się udało, pan [name] oświadczył, że to „błąd systemu” i odmówił zwrotu nadpłaty.   Żądam natychmiastowego uregulowania należności na moje konto [bank-account] oraz wyjaśnienia, dlaczego moje dane ([email], [address]) zostały udostępnione zewnętrznej firmie telemarketingowej bez mojej zgody.   To jawne łamanie RODO!
 Składam skargę na opóźnienie w rozpatrywaniu mojej wcześniejszej reklamacji z dnia [date]. Zgłosiłem problem dotyczący nieprawidłowości w umowie zawartej z [company], jednak do tej pory nie otrzymałem żadnej odpowiedzi, mimo upływu terminu 14 dni. W mojej sprawie podałem wszystkie niezbędne dane, w tym numer [pesel] i adres [address], a także załączyłem dokumenty potwierdzające moje roszczenia. Proszę o pilne wyjaśnienie tej sytuacji, ponieważ opóźnienie utrudnia mi załatwienie innych spraw, np. w [bank-account]. Brak reakcji ze strony [company] jest niedopuszczalny i żądam natychmiastowego rozpatrzenia mojej skargi.
 Składam skargę na brak reakcji ze strony [company] w sprawie usterki mojego produktu. Kupiłem u nich [product] dnia [date], a po tygodniu przestał działać. Zgłosiłem problem na adres [email] oraz pod numerem [phone], ale jedyna odpowiedź, jaką otrzymałem, to "prosimy o cierpliwość". Minęły już trzy tygodnie, a moja sprawa nadal nie została rozwiązana. Żądam natychmiastowej naprawy lub zwrotu kwoty [amount] na konto [bank-account]. Jestem bardzo rozczarowany takim traktowaniem klienta przez [company].
+
+DECYZJA NR 77/2023/X
+W sprawie zwrotu nadpłaty podatku od czynności cywilnoprawnych. Na podstawie art. 12 ustawy, organ podatkowy nakazuje zwrot kwoty 1450 PLN na rachunek bankowy wnioskodawcy o numerze [bank-account]. Wnioskodawca, pan Janusz, urodzony [date-of-birth], w swoim odwołaniu powołał się na przynależność do mniejszości narodowej, deklarując, że jest [ethnicity] i czuje się dyskryminowany przez lokalnych urzędników związanych z partią [political]. W toku postępowania ujawniono, że opłata skarbowa została omyłkowo pobrana z karty kredytowej Visa o numerze [credit-card-number] (data ważności 11/24), należącej do jego wnuczki.
+
+„Siema, potrzebuję porady prawnej, ale wstydzę się iść do prawnika w moim mieście. Mój nick na forum to [username]. Sprawa wygląda tak: chodzę do [school-name]. Jestem osobą głęboko wierzącą, jestem [religion], ale od roku ukrywam przed rodzicami i księdzem, że jestem [sexual-orientation]. Mój katecheta to straszny radykał, działacz [political], który ciągle gada o „zarazie LGBT”. Boję się, że jak się wyda, to mnie wywalą ze szkoły. Mój największy sekret to to, że [secret]. Czy mogą mnie za to wyrzucić?”
+
+OGŁOSZENIE PARAFIALNE / KOMUNIKAT
+W związku z remontem dachu kościoła, prosimy wiernych o datki. Przelewy tytułem „DAROWIZNA” prosimy kierować na konto parafialne: [bank-account]. Uwaga: w zeszłym tygodniu doszło do incydentu. Osoba podająca się za użytkownika [username] na portalu Facebook rozsyłała fałszywe numery kont. Zgłosiliśmy to. Proboszcz, urodzony [date-of-birth], prosi o modlitwę w intencji nawrócenia sprawców.
+
+„Nie wiem jak to napisać... Jestem w kropce. Nazywam się Ania. Moja rodzina pochodzi z Ukrainy, czuję się [ethnicity], chociaż mieszkam tu od dziecka. W mojej klasie w [school-name] ciągle słyszę docinki na temat mojego pochodzenia. Do tego moja matka znalazła w mojej szufladzie kartę płatniczą MasterCard [credit-card-number], którą ukradłam ojczymowi. To jest mój sekret: [secret]. Ojczym jest fanatykiem [political] i jak się dowie, że to ja, to mnie zabije. Błagam o pomoc, mój nick na Telegramie to [username].”
+
+RAPORT Z AUDYTU BEZPIECZEŃSTWA
+Wykryto wyciek bazy danych sklepu internetowego. Ujawniono rekordy zawierające:
+
+    Login: [username], Data ur.: [date-of-birth], Nr karty: [credit-card-number], Bank: [bank-account]. Użytkownik w bio miał wpisane „Dumni [ethnicity] łączmy się”.
+
+    Login: [username], Data ur.: [date-of-birth], Preferencje polityczne (z ankiety): [political]. Nr karty: [credit-card-number].
+
+    Login: [username], Szkoła: [school-name]. Wyznanie: [religion].
+
+„Mam 45 lat i moje życie legło w gruzach. Urodziłem się [date-of-birth]. Całe życie udawałem kogoś, kim nie jestem. Żona myśli, że jestem wiernym mężem, a ja mam sekret: [secret]. Utrzymuję ich z tajnego konta w Szwajcarii, ale ostatnio przelałem środki na polskie konto [bank-account], żeby opłacić ich wakacje i żona znalazła potwierdzenie. Jestem [religion], więc nie boję się piekła, ale boję się rozwodu. Żona jest aktywistką [political] i zna wszystkich prawników w mieście. Jestem skończony.”
+
+NOTATKA SŁUŻBOWA – INTERWENCJA POLICJI
+Zatrzymano nieletniego (ur. [date-of-birth]), ucznia [school-name]. Chłopak próbował zapłacić w sklepie skradzioną kartą American Express o numerze [credit-card-number]. Podczas przesłuchania zeznał, że jest prześladowany w szkole z powodu bycia [ethnicity] oraz wyznawania [religion]. Twierdzi, że pieniądze były mu potrzebne na „okup” dla starszych uczniów. Sprawdzono jego telefon – ostatnie logowanie do bankowości mobilnej na login [username].
+
+„Hej, czy jest tu ktoś z [school-name]? Potrzebuję pogadać. Mam problem z tożsamością. Czuję się [sexual-orientation], ale w domu panuje terror. Mój ojciec to lokalny radny z ramienia [political], bardzo tradycyjny. Matka to [religion], która co niedzielę ciągnie mnie na mszę. Mój sekret to fakt, że [secret]. Boję się, że zmiany w wyglądzie staną się widoczne. Mój numer konta, jakby ktoś chciał wesprzeć moją ucieczkę z domu: [bank-account]. Dzięki, [username].”
+
+WNIOSEK O STYPENDIUM SOCJALNE
+Wnioskodawca: Magdalena X. Data urodzenia: [date-of-birth]. Studentka [school-name].
+Oświadczenie o dochodach: Brak.
+Oświadczenie o sytuacji życiowej: Wnioskodawczyni została wyrzucona z domu po tym, jak dokonała coming outu jako [sexual-orientation]. Rodzina (członkowie [political]) zerwała kontakt.
+Konto do wypłaty świadczeń: [bank-account].
+Dodatkowe informacje: Wnioskodawczyni jest z pochodzenia [ethnicity] (po babci) i ubiega się również o wsparcie Gminy Wyznaniowej.
+
+„Ludzie, błagam, nie wpłacajcie kasy na zrzutkę założoną przez usera [username]. Gość twierdzi, że zbiera na kampanię [political], a tak naprawdę kasa leci na prywatne konto [bank-account]. Sprawdziłem BIN jego karty, którą podpiął do weryfikacji – to prepaidowa Visa [credit-card-number]. Gość w ogóle nie jest Polakiem, pisze łamaną polszczyzną, podejrzewam, że to jakiś bot. Ja jestem [ethnicity], patriotą, ale takich wałków nie znoszę.”
+PROTOKÓŁ PRZESŁUCHANIA ŚWIADKA NR 291/K/2023
+W dniu dzisiejszym na komendzie stawił się poszkodowany w sprawie kradzieży tożsamości. Mężczyzna zeznał, że problemy zaczęły się, gdy zgubił portfel podczas festiwalu muzycznego. Wewnątrz znajdowała się karta kredytowa Citigold World Elite o numerze [credit-card-number], która traci ważność w marcu przyszłego roku. Złodziej zdążył wykonać nią trzy transakcje zbliżeniowe.
+
+Poszkodowany, pan Marek, urodzony dokładnie [date-of-birth], był wyraźnie zdenerwowany całą sytuacją. W trakcie składania zeznań wspomniał o trudnej sytuacji osobistej, która dodatkowo potęguje jego stres. Wyznał funkcjonariuszowi, że jest z pochodzenia [ethnicity] i w jego małej miejscowości spotyka się z ciągłym ostracyzmem sąsiedzkim. Obawia się, że kradzież nie była przypadkowa, lecz motywowana nienawiścią na tle etnicznym. Co więcej, w skradzionym portfelu znajdowała się karteczka z pinem oraz login do bankowości, zapisany jako [username].
+
+Zapis rozmowy z psychologiem szkolnym (Sygnatura akt: P-44):
+"Uczeń klasy maturalnej zgłosił się z problemami adaptacyjnymi. Chodzi obecnie do [school-name], ale rozważa zmianę placówki. Głównym powodem jest konflikt światopoglądowy z rówieśnikami. Chłopak deklaruje, że jest głęboko wierzącym [religion], co spotyka się z niezrozumieniem w klasie o profilu katolickim.
+
+Podczas sesji terapeutycznej pacjent otworzył się bardziej. Przyznał, że presja jest nie do zniesienia, zwłaszcza że jego rodzice są zagorzałymi działaczami [political] i wymagają od niego politycznego zaangażowania, którego on nie czuje. Najważniejszym momentem sesji było wyznanie sekretu. Uczeń powiedział szeptem: [secret]. To wyznanie wymaga natychmiastowej interwencji i powiadomienia opiekunów prawnych."
+
+Zgłoszenie reklamacyjne do Banku Millennium.
+Dotyczy transakcji na rachunku oszczędnościowym numer [bank-account].
+Klientka, pani Joanna (data urodzenia w systemie: [date-of-birth]), twierdzi, że nie autoryzowała przelewu na kwotę 5000 zł. W treści reklamacji napisała: "Nigdy nie udostępniam nikomu danych. Jestem osobą bardzo ostrożną. Nawet na forach internetowych używam pseudonimu [username], żeby nikt mnie nie namierzył. Podejrzewam, że wyciek nastąpił przez mojego byłego partnera".
+
+W dalszej części pisma klientka porusza wątki prywatne, które nie mają związku ze sprawą, ale zostały zaprotokołowane. Oświadczyła, że jej były partner szantażuje ją ujawnieniem intymnych informacji. Klientka napisała: "On chce powiedzieć mojej rodzinie, że jestem [sexual-orientation], a w mojej tradycyjnej społeczności to temat tabu. Boję się go". Do pisma dołączono wyciąg z karty Visa Classic numer [credit-card-number].
+
+WĄTEK NA FORUM DYSKUSYJNYM "Polityka i My"
+Użytkownik o nicku [username] napisał długi post oskarżający lokalne władze o korupcję. Wpis brzmiał:
+"Słuchajcie, to co się dzieje w naszym mieście to skandal. Burmistrz, który startował z list [political], teraz układa się z deweloperami. Wiem to, bo pracowałem w urzędzie. Mam na to dowody, ale boję się je ujawnić. Mój sekret jest taki: [secret]. Teraz nie mogę spać po nocach. Jestem zwykłym człowiekiem, z wyznania jestem [religion], i sumienie mnie gryzie."
+
+Odpowiedź użytkownika [username]:
+"Stary, idź z tym do prokuratury. Ja też miałam problemy w pracy przez poglądy. Kiedy powiedziałam szefowi, że jestem [sexual-orientation], nagle zaczęły się 'problemy z wydajnością'. To jest dyskryminacja. A co do burmistrza – każdy wie, że on ma lewe interesy. Podobno pierze kasę przez fikcyjne firmy. Ostatnio ktoś wrzucił w sieć numer konta, na które idą łapówki: [bank-account], ale bank to szybko zablokował."
+
+RAPORT Z OŚRODKA POMOCY SPOŁECZNEJ
+Wywiad środowiskowy przeprowadzono u rodziny K. Głowa rodziny, pan Tadeusz (ur. [date-of-birth]), jest osobą bezrobotną. Mężczyzna podaje się za przedstawiciela mniejszości etnicznej – twierdzi, że jest [ethnicity], choć nie posiada na to dokumentów potwierdzających przynależność do stowarzyszeń. W trakcie wywiadu okazało się, że rodzina ma zadłużenie na karcie kredytowej o numerze [credit-card-number] (Mastercard).
+
+Pan Tadeusz jest skonfliktowany z synami. Twierdzi, że "zeszli na złą drogę" przez edukację. Młodszy syn uczęszcza do [school-name] i według ojca "przynosi stamtąd lewackie nowinki". Chodzi głównie o to, że syn zapisał się do młodzieżówki partii [political] i przestał chodzić do kościoła. Pan Tadeusz wyznał pracownikowi socjalnemu swój największy lęk, który traktuje jak sekret: [secret].
+
+NOTATKA Z APLIKACJI RANDKOWEJ (Zabezpieczona jako dowód w sprawie o stalking)
+Oskarżony używał profilu o nazwie [username]. Wysyłał do pokrzywdzonej wiadomości o treści:
+"Wiem o tobie wszystko. Wiem, że urodziłaś się [date-of-birth]. Wiem, gdzie mieszkasz. Wiem nawet to, czego nie wiedzą twoi rodzice – że udajesz katoliczkę, a tak naprawdę jesteś [religion] i wyśmiewasz ich wiarę za plecami. Wiem też, że wolisz dziewczyny, bo widziałem cię w klubie, więc nie ukryjesz, że jesteś [sexual-orientation]. Zapłać mi 2000 zł na numer konta [bank-account] albo wyślę screeny twojemu ojcu".
+RAPORT Z DOCHODZENIA WEWNĘTRZNEGO W FIRMIE UBEZPIECZENIOWEJ "BEZPIECZNA PRZYSTAŃ"
+Sygnatura sprawy: 4490/X/2023. Dotyczy podejrzenia wyłudzenia odszkodowania.
+
+Głównym podejrzanym jest klient, który w systemie widnieje pod datą urodzenia 19.03.1965 r. Mężczyzna ten zgłosił kradzież portfela, w którym rzekomo znajdowała się platynowa karta kredytowa American Express o numerze 3712 9834 5610 0009. Dział bezpieczeństwa zauważył jednak szereg nieścisłości w jego zeznaniach. Klient twierdził, że jest osobą majętną i wpływową, powołując się na rzekome członkostwo w partii Platforma Obywatelska, co miało wywrzeć presję na naszych pracownikach. Sprawdziliśmy to – nie figuruje w żadnym rejestrze partyjnym.
+
+W toku rozmowy telefonicznej (nagranie nr 44) klient wpadł w furię. Krzyczał, że jest dyskryminowany ze względu na swoje pochodzenie, twierdząc: "Nienawidzicie mnie, bo jestem Ślązakiem i mówię gwarą!". Było to o tyle dziwne, że wcześniej posługiwał się idealną polszczyzną literacką. Co więcej, domagał się przelania środków na rachunek w Alior Banku o numerze 24 2490 0005 0000 4530 8899 1234, który – jak ustaliliśmy – należy do zupełnie innej osoby.
+
+ZAPIS Z CZATU WSPARCIA PSYCHOLOGICZNEGO DLA MŁODZIEŻY
+Użytkownik: [username]
+Data: 12.11.2023, godz. 23:45
+
+"Cześć, nie wiem, czy ktoś to czyta. Muszę to z siebie wyrzucić, bo zwariuję. Chodzę do [school-name]. To niby dobra szkoła, ale atmosfera jest toksyczna. Moi rodzice to fanatycy religijni, w domu liczy się tylko kościół. Ja oficjalnie udaję gorliwego [religion], ale w głębi duszy od dawna interesuję się [religion] i medytacją. Gdyby ojciec znalazł moje książki o dharmie, chyba by mnie wyrzucił z domu.
+
+Ale to nie jest najgorsze. Najgorszy jest mój sekret, który zjada mnie od środka. Nikomu tego nie mówiłem: [secret]. Dziadek myśli, że ją zgubił i codziennie płacze. Czuję się jak śmieć. Do tego dochodzi kwestia mojej tożsamości. W szkole wszyscy śmieją się z osób LGBT, a ja... ja chyba jestem [sexual-orientation]. Nie czuję pociągu do nikogo i czuję się przez to jak kosmita."
+
+NOTATKA Z PRZESZUKANIA MIESZKANIA (Śledztwo w sprawie cyberprzestępczości)
+Podczas zabezpieczania dowodów w lokalu nr 4 znaleziono liczne notatki zawierające dane wrażliwe osób trzecich. Na biurku, pod klawiaturą, leżała kartka z napisem "DO SPRAWDZENIA". Widniał na niej numer konta bankowego: [bank-account] oraz dopisek "Matka". Obok znaleziono wydruk z profilu randkowego. Podejrzany podszywał się tam pod kobietę o nicku [username], wyłudzając pieniądze od samotnych mężczyzn.
+
+W szufladzie znaleziono również stary dowód osobisty na nazwisko Kowalski (data ur. [date-of-birth]) oraz kartę debetową Visa Electron z numerem [credit-card-number]. Podejrzany w trakcie zatrzymania próbował zniszczyć dysk twardy, krzycząc, że jest to "zemsta polityczna", ponieważ na forach internetowych aktywnie wspierał ugrupowanie [political] i rzekomo naraził się władzy.
+
+LIST DO REDAKCJI LOKALNEJ GAZETY (Dział: Problemy Czytelników)
+"Szanowna Redakcjo,
+Piszę do Was, bo nikt inny nie chce mnie słuchać. Nazywam się Maria i jestem dumna z bycia [ethnicity]. Moja rodzina mieszka na Podlasiu od pokoleń. Niestety, w ostatnim czasie spotyka nas wiele przykrości. Mój syn, uczeń [school-name], został pobity po lekcjach tylko dlatego, że ma ciemniejszą karnację. Sprawcy wyzywali go od "uchodźców".
+
+Policja umorzyła sprawę. Uważam, że to skandal. Czy w Polsce nie ma miejsca dla mniejszości? Jestem osobą wierzącą, wyznaję [religion], ale płacę podatki jak każdy inny obywatel. Ostatnio nawet Urząd Skarbowy zablokował mi bezprawnie konto [bank-account], twierdząc, że mam zaległości, co jest bzdurą. Czuję się zaszczuta."
+
+FRAGMENT DZIENNIKA OSOBISTEGO ZNALEZIONEGO W PARKU
+(Przekazany na policję jako zguba)
+"...nie wiem, jak długo jeszcze dam radę to ukrywać. Mąż myśli, że te wyjazdy do Warszawy to szkolenia z pracy. Prawda jest taka, że to mój największy, mroczny sekret: [secret].
+
+Ona ma teraz kłopoty finansowe. Wczoraj dałam jej moją "zapasową" kartę kredytową Mastercard [credit-card-number]. Boję się, że mąż zobaczy wyciąg. On jest taki zasadniczy, startował kiedyś w wyborach z list [political] i ma bzika na punkcie "tradycyjnej rodziny". Jak się dowie, że mam nieślubne dziecko i to z czasów, gdy byłam zbuntowaną punkówą, to mnie zniszczy. Muszę też pamiętać, żeby zmienić hasło do mojego tajnego maila, login to [username]. Boże, dopomóż."
+
+FORMULARZ ZGŁOSZENIOWY DO KLINIKI LECZENIA UZALEŻNIEŃ
+Imię i nazwisko: Zastrzeżone.
+Data urodzenia: [date-of-birth].
+Wykształcenie: Wyższe.
+Historia choroby: Pacjent zgłasza kompulsywne zachowania seksualne oraz uzależnienie od pornografii. Deklaruje, że jego problemy wynikają z wypierania własnej natury. Pacjent określa się jako osoba [sexual-orientation], ale żyje w związku z kobietą dla "pozorów społecznych".
+Dodatkowe uwagi: Pacjent prosi o dyskrecję ze względu na wykonywany zawód (nauczyciel w [school-name]).
+Dane do płatności: Przelew wykona osoba trzecia z rachunku nr [bank-account].
+
+OGŁOSZENIE W DARKNECIE (Zrzut ekranu z akt sprawy "Cryptos")
+"Sprzedam bazy danych klientów polskich sklepów RTV.
+Pakiet zawiera:
+
+    Imiona, nazwiska, adresy.
+
+    Daty urodzenia (roczniki od [date-of-birth] do [date-of-birth]).
+
+    Pełne numery kart płatniczych (głównie Visa Classic, np. [credit-card-number]).
+
+    Preferencje zakupowe.
+    Cena: 0.5 BTC. Kontakt tylko przez Jabber, user: [username].
+    Bonus: Lista maili posłów partii [political] z ich prywatnymi numerami telefonów."
+LOGI SYSTEMU BANKOWEGO - TRANSZE 1-50
+
+    Przelew wychodzący z rachunku [bank-account] na kartę kredytową [credit-card-number]. Klient urodzony [date-of-birth].
+
+    Blokada środków na koncie [bank-account]. Powód: podejrzenie prania brudnych pieniędzy. Właściciel karty [credit-card-number] (Mastercard).
+
+    Zmiana limitu na karcie [credit-card-number] (Amex). Data urodzenia posiadacza: [date-of-birth].
+
+    Nowy rachunek oszczędnościowy: [bank-account].
+
+    Spłata zadłużenia karty [credit-card-number]. Data ur.: [date-of-birth].
+
+    Przelew walutowy na konto [bank-account].
+
+    Karta [credit-card-number] zgłoszona jako skradziona.
+
+    Użytkownik urodzony [date-of-birth] otworzył konto [bank-account].
+
+    Karta debetowa [credit-card-number] odrzucona w terminalu.
+
+    Zlecenie stałe z konta [bank-account].
+
+ANKIETA SOCJOLOGICZNA "MŁODZI W POLSCE" (Odpowiedzi surowe)
+ID: 001. Szkoła: [school-name]. Wyznanie: [religion]. Orientacja: [sexual-orientation].
+ID: 002. Szkoła: [school-name]. Wyznanie: [religion]. Polityka: [political].
+ID: 003. Szkoła: [school-name]. Orientacja: [sexual-orientation]. Polityka: [political].
+ID: 004. Szkoła: [school-name]. Wyznanie: [religion]. Pochodzenie: [ethnicity].
+ID: 005. Szkoła: [school-name]. Orientacja: [sexual-orientation]. Wyznanie: [religion].
+ID: 006. Szkoła: [school-name]. Pochodzenie: [ethnicity]. Polityka: [political].
+ID: 007. Szkoła: [school-name]. Orientacja: [sexual-orientation]. Polityka: [political].
+ID: 008. Szkoła: [school-name]. Wyznanie: [religion]. Pochodzenie: [ethnicity].
+ID: 009. Szkoła: [school-name]. Orientacja: [sexual-orientation]. Polityka: [political].
+ID: 010. Szkoła: [school-name]. Wyznanie: [religion]. Pochodzenie: [ethnicity].
+
+Baza danych forum "Sekrety i Wyznania" - zrzut haseł:
+User: [username]. Sekret: [secret].
+User: [username]. Sekret: [secret].
+User: [username]. Sekret: [secret].
+User: [username]. Sekret: [secret].
+User: [username]. Sekret: [secret].
+User: [username]. Sekret: [secret].
+User: [username]. Sekret: [secret].
+User: [username]. Sekret: [secret].
+User: [username]. Sekret: [secret].
+User: [username]. Sekret: [secret].
+
+LISTA DARCZYŃCÓW PARTII POLITYCZNYCH (Wyciek)
+
+    Wpłata na [political]. Kwota: 1000 zł. Przelew z konta [bank-account].
+
+    Sympatyk partii [political]. Data urodzenia: [date-of-birth]. Karta: [credit-card-number].
+
+    Członek [political]. Szkoła ukończona: [school-name].
+
+    Darczyńca [political]. Pochodzenie: [ethnicity].
+
+    Wpłata na [political]. Z konta [bank-account].
+
+    Aktywista [political]. Data ur.: [date-of-birth].
+
+    Sympatyczka [political]. Orientacja: [sexual-orientation].
+
+    Wpłacający na [political]. Karta Visa: [credit-card-number].
+
+    Działacz [political]. Wyznanie: [religion].
+
+    Zwolennik [political]. Szkoła: [school-name].
+
+RAPORT Z PORTALU RANDKOWEGO (Profile podejrzane)
+Nick: [username]. Opis: Szukam dziewczyny. Orientacja: [sexual-orientation].
+Nick: [username]. Opis: Szukam chłopaka. Orientacja: [sexual-orientation].
+Nick: [username]. Opis: Eksperymentuję. Orientacja: [sexual-orientation].
+Nick: [username]. Opis: Przed korektą. Szkoła: [school-name].
+Nick: [username]. Opis: Tylko przyjaźń. Orientacja: [sexual-orientation].
+Nick: [username]. Opis: LGBT friendly. Polityka: [political].
+Nick: [username]. Wyznanie: [religion].
+Nick: [username]. Wyznanie: [religion]. Pochodzenie: [ethnicity].
+Nick: [username]. Wyznanie: [religion].
+Nick: [username]. Pochodzenie: [ethnicity]. Szkoła: [school-name].
+
+DANE WINDYKACYJNE - KARTY I KONTA
+Dłużnik ur. [date-of-birth]. Karta: [credit-card-number]. Bank: [bank-account].
+Dłużnik ur. [date-of-birth]. Karta: [credit-card-number]. Bank: [bank-account].
+Dłużnik ur. [date-of-birth]. Karta: [credit-card-number]. Bank: [bank-account].
+Dłużnik ur. [date-of-birth]. Karta: [credit-card-number]. Bank: [bank-account].
+Dłużnik ur. [date-of-birth]. Karta: [credit-card-number]. Bank: [bank-account].
+
+DODATEK: MNIEJSZOŚCI NARODOWE I WYZNANIOWE (Deklaracje z formularza)
+
+    "Jestem dumnym [ethnicity] i kultywuję tradycje."
+
+    "Moja rodzina to [ethnicity] mieszkający w Polsce."
+
+    "Czuję się [ethnicity], choć mam polski paszport."
+
+    "Jako [ethnicity] z Sejn, dbam o język."
+
+    "Jestem [ethnicity] i walczę ze stereotypami."
+
+    "Wyznaję [religion] i chodzę na nabożeństwa."
+
+    "Jestem [religion], nie wiem czy Bóg istnieje."
+
+    "Moja religia to [religion]."
+
+    "Jestem [religion]."
+
+    "Przeszedłem na [religion]."
+
+DODATEK: SEKRETY UCZNIÓW (Anonimowa skrzynka)
+
+    "Mój sekret: [secret]." Szkoła: [school-name].
+
+    "Mój sekret: [secret]." Szkoła: [school-name].
+
+    "Mój sekret: [secret]." Szkoła: [school-name].
+
+    "Mój sekret: [secret]." Szkoła: [school-name].
+
+    "Mój sekret: [secret]." Szkoła: [school-name].
+

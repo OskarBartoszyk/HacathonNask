@@ -100,12 +100,95 @@ def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[T
     anon_idx = 0
 
     punctuation_tokens = {'.', ',', ';', ':', '!', '?', '-', '(', ')', '/', '–', '—'}
-    punctuation_friendly_labels = all_labels | {'PII'}
     stop_words = {
-        'w', 'z', 'na', 'do', 'od', 'i', 'a', 'o', 'że', 'to', 'jak', 'gdy', 'lub',
+        'do', 'od', 'i', 'a', 'o', 'że', 'to', 'jak', 'gdy', 'lub',
         'ale', 'jeśli', 'po', 'przed', 'przez', 'dla', 'u', 'ze', 'pod', 'nad'
     }
-    anchor_window = 10
+    anchor_window = 5
+
+    vowels = set('aąeęioóuy')
+    common_first_names = {
+        'adam', 'adrian', 'adrianna', 'agnieszka', 'alan', 'albert', 'aleksander', 'aleksandra',
+        'alicja', 'amelia', 'anastazja', 'andrzej', 'angelika', 'anna', 'antoni', 'arkadiusz',
+        'barbara', 'bartlomiej', 'bartosz', 'bartłomiej', 'beata', 'bianka', 'bruno', 'damian',
+        'daniel', 'dominik', 'dominika', 'dorota', 'emilia', 'ernest', 'ewa', 'filip',
+        'franciszek', 'gabriel', 'gabriela', 'gaja', 'grzegorz', 'halina', 'hubert', 'iwona',
+        'izaak', 'izabela', 'jacek', 'jakub', 'jan', 'jeremi', 'jerzy', 'joanna',
+        'jolanta', 'jozef', 'julia', 'julita', 'justyna', 'józef', 'kacper', 'kaja',
+        'kalina', 'kamil', 'kamila', 'karina', 'karol', 'karolina', 'katarzyna', 'kazimierz',
+        'klaudia', 'konrad', 'kornelia', 'krystian', 'krystyna', 'krzysztof', 'ksawery', 'leon',
+        'lukasz', 'maciej', 'magdalena', 'maksymilian', 'malgorzata', 'marcel', 'marcin', 'marek',
+        'maria', 'mariusz', 'marta', 'martyna', 'mateusz', 'małgorzata', 'melania', 'michal',
+        'michał', 'monika', 'natalia', 'natan', 'natasza', 'nela', 'nikola', 'norbert',
+        'olga', 'oliwia', 'oliwier', 'patryk', 'paulina', 'pawel', 'paweł', 'piotr',
+        'przemyslaw', 'przemysław', 'rafal', 'rafał', 'robert', 'ryszard', 'sara', 'sebastian',
+        'stanisław', 'sylwia', 'szymon', 'tola', 'tomasz', 'tymoteusz', 'weronika', 'wiktor',
+        'wiktoria', 'wojciech', 'zbigniew', 'zofia', 'zuzanna', 'łukasz'
+    }
+    surname_suffixes_primary = (
+        'ski', 'ska', 'cki', 'cka', 'dzki', 'dzka', 'icz', 'wicz', 'owicz', 'ewicz',
+        'owa', 'ówna', 'ewna', 'owski', 'ewski', 'ak'
+    )
+    surname_suffixes_extended = surname_suffixes_primary + (
+        'czyk', 'czak', 'czuk', 'szcz', 'iak', 'ian', 'asz', 'esz', 'isz', 'usz', 'ysz', 'arz', 'orz',
+        'nik', 'rek', 'aka', 'zek', 'zka', 'cha', 'ała', 'yka', 'tek', 'iem', 'lik', 'cza', 'zko',
+        'era', 'uka', 'iuk', 'nek', 'iel', 'och', 'iec', 'ych', 'ika', 'ela', 'rka', 'dek', 'zyk',
+        'pka', 'ior', 'hel', 'ala', 'sik', 'ora', 'owi', 'uła', 'ura', 'łek', 'uch', 'lec', 'nka',
+        'lca', 'oła', 'jda', 'łka', 'ota', 'ica', 'roń', 'ter', 'ich', 'zvk', 'wka', 'sek'
+    )
+    alpha_cleanup_re = re.compile(r'[^A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż\-]')
+
+    def extract_alpha_words(tokens: List[str]) -> List[str]:
+        words: List[str] = []
+        for token in tokens:
+            cleaned = alpha_cleanup_re.sub('', token)
+            if cleaned and any(ch.isalpha() for ch in cleaned):
+                words.append(cleaned)
+        return words
+
+    def looks_like_first_name(tokens: List[str]) -> bool:
+        words = extract_alpha_words(tokens)
+        if not words:
+            return False
+        first = words[0]
+        lowered = first.lower()
+        if lowered in common_first_names:
+            return True
+        if len(first) < 3:
+            return False
+        if first[0].isupper() and any(ch.lower() in vowels for ch in first):
+            tail = first[1:]
+            if tail.islower() or '-' in tail:
+                return True
+        return False
+
+    def looks_like_surname(tokens: List[str]) -> bool:
+        words = extract_alpha_words(tokens)
+        if not words:
+            return False
+        last = words[-1]
+        lowered = last.lower()
+        if lowered.endswith(surname_suffixes_extended):
+            return True
+        if '-' in last:
+            parts = last.split('-')
+            if parts and all(part and part[0].isupper() for part in parts):
+                return True
+        if last.isupper() and len(last) >= 3:
+            return True
+        if last[0].isupper() and last[1:].islower() and any(ch.lower() in vowels for ch in last):
+            return True
+        return False
+
+    def should_promote_to_name(first_tokens: List[str], second_tokens: List[str]) -> bool:
+        if not looks_like_first_name(first_tokens):
+            return False
+        if not looks_like_surname(second_tokens):
+            return False
+        first_words = extract_alpha_words(first_tokens)
+        if len(first_words) > 3:
+            return False
+        return True
 
     def find_anchor_position(sequence: List[str], start_idx: int, anchor_tokens: List[str]) -> int | None:
         if not anchor_tokens:
@@ -119,6 +202,8 @@ def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[T
                 return idx
         return None
 
+    pending_surname_candidate: dict | None = None
+
     while orig_idx < len(orig_tokens) and anon_idx < len(anon_tokens):
         orig_token = orig_tokens[orig_idx]
         anon_token = anon_tokens[anon_idx]
@@ -131,6 +216,7 @@ def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[T
 
         if orig_token.startswith('[') and orig_token.endswith(']'):
             label = label_map.get(orig_token, 'PII')
+            current_orig_idx = orig_idx
             entity_tokens: List[str] = []
 
             anchor_tokens_raw: List[str] = []
@@ -188,24 +274,20 @@ def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[T
                     current_anon = anon_tokens[anon_idx]
 
                     if next_label_token and next_label_token.startswith('[') and next_label_token.endswith(']'):
+                        if not entity_tokens:
+                            entity_tokens.append(current_anon)
+                            anon_idx += 1
                         break
 
                     if next_orig is not None and current_anon == next_orig:
+                        if not entity_tokens:
+                            entity_tokens.append(current_anon)
+                            anon_idx += 1
                         break
 
                     if current_anon in punctuation_tokens and entity_tokens:
                         if current_anon == ',' and label in ['NAME', 'SURNAME', 'EMAIL']:
                             break
-                        if label in punctuation_friendly_labels:
-                            entity_tokens.append(current_anon)
-                            anon_idx += 1
-                            if anon_idx < len(anon_tokens) and anon_tokens[anon_idx][0].isdigit():
-                                continue
-                            if next_orig is not None and anon_idx < len(anon_tokens):
-                                if (anon_tokens[anon_idx] == next_orig or
-                                        anon_tokens[anon_idx].lower() in stop_words):
-                                    break
-                            continue
                         anon_idx += 1
                         break
 
@@ -213,10 +295,34 @@ def align_and_tag(orig_text: str, anon_text: str, debug: bool = False) -> List[T
                     anon_idx += 1
 
             # Tagowanie BIO
+            result_start = len(result)
+            appended_len = 0
             if entity_tokens:
                 result.append((entity_tokens[0], f'B-{label}'))
                 for token in entity_tokens[1:]:
                     result.append((token, f'I-{label}'))
+                appended_len = len(entity_tokens)
+
+            if pending_surname_candidate:
+                if pending_surname_candidate['orig_idx'] + 1 == current_orig_idx:
+                    if (label == 'SURNAME' and appended_len and
+                            should_promote_to_name(pending_surname_candidate['tokens'], entity_tokens)):
+                        for offset in range(pending_surname_candidate['length']):
+                            token_text = result[pending_surname_candidate['start'] + offset][0]
+                            tag = 'B-NAME' if offset == 0 else 'I-NAME'
+                            result[pending_surname_candidate['start'] + offset] = (token_text, tag)
+                    pending_surname_candidate = None
+                elif pending_surname_candidate['orig_idx'] + 1 < current_orig_idx:
+                    pending_surname_candidate = None
+
+            if (appended_len and label == 'SURNAME' and
+                    orig_idx + 1 < len(orig_tokens) and orig_tokens[orig_idx + 1] == '[surname]'):
+                pending_surname_candidate = {
+                    'start': result_start,
+                    'length': appended_len,
+                    'tokens': entity_tokens.copy(),
+                    'orig_idx': current_orig_idx,
+                }
 
             orig_idx += 1
             continue

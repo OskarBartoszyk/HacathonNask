@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Iterable, List, Sequence, Tuple
 
 import torch
-from anonimizer import Anonimizer, ReadText
+from .anonimizer import Anonimizer, ReadText
 from transformers import AutoModelForTokenClassification, AutoTokenizer
 BASE_DIR = Path(__file__).resolve().parent.parent
 if str(BASE_DIR) not in sys.path:
