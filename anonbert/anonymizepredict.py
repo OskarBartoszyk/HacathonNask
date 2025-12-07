@@ -97,6 +97,11 @@ class AnonymizePredict:
 
 
     def tokens_to_placeholder_text(self, tokens: Sequence[str], tags: Sequence[str]) -> str:
+        if len(tokens) != len(tags):
+            min_len = min(len(tokens), len(tags))
+            tokens = tokens[:min_len]
+            tags = tags[:min_len]
+        
         compressed: List[str] = []
         i = 0
         while i < len(tokens):
@@ -106,7 +111,7 @@ class AnonymizePredict:
                 placeholder = self.PLACEHOLDER_MAP.get(label_name, "[pii]")
                 compressed.append(placeholder)
                 i += 1
-                while i < len(tokens) and tags[i].startswith("I-"):
+                while i < len(tokens) and i < len(tags) and tags[i].startswith("I-"):
                     i += 1
                 continue
             compressed.append(tokens[i])
