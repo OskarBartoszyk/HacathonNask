@@ -1,0 +1,9 @@
+Performance Benchmarks
+
+Training Performance (NVIDIA A100-PCIE-40GB)
+- Final model training: 6 minutes
+- Full training with Optuna hyperparameter search (20 trials): 40 minutes
+
+Inference Performance (MacBook Air M1, 8GB RAM)
+- Dataset creation (prepare_dataset.py): ~0.5 seconds
+- Text anonymization (single file): ~7 seconds
